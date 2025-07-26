@@ -1,0 +1,89 @@
+name: Traffic Flow Simulator CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [3.7, 3.8, 3.9, '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+    
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+    
+    - name: Test simulation execution
+      run: |
+        # Test that the simulator runs without errors
+        python -c "
+        import sys
+        sys.path.append('.')
+        from traffic_simulator import TrafficSimulator
+        sim = TrafficSimulator(road_length=50, density=0.3, max_speed=3, brake_prob=0.2, random_seed=42)
+        sim.run_simulation(steps=10)
+        sim.print_statistics()
+        print('✓ Simulation test passed!')
+        "
+    
+    - name: Test visualization generation
+      run: |
+        # Test visualization without displaying (for CI)
+        python -c "
+        import matplotlib
+        matplotlib.use('Agg')  # Use non-GUI backend
+        import sys
+        sys.path.append('.')
+        from traffic_simulator import TrafficSimulator
+        sim = TrafficSimulator(road_length=50, density=0.3, max_speed=3, brake_prob=0.2, random_seed=42)
+        sim.run_simulation(steps=20)
+        sim.create_enhanced_space_time_diagram()
+        print('✓ Visualization test passed!')
+        "
+
+  package:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install build dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+    
+    - name: Build package
+      run: python -m build
+    
+    - name: Check package
+      run: twine check dist/*
