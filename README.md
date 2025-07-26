@@ -111,8 +111,8 @@ simulator.create_enhanced_space_time_diagram()
 ### Setup
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/yourusername/traffic-flow-simulator.git
-   cd traffic-flow-simulator
+   git clone https://github.com/PrachitiSParulekar/Traffic-Flow-Simulator-.git
+   cd Traffic-Flow-Simulator-
    ```
 
 2. **Install dependencies**:
@@ -222,6 +222,8 @@ This simulator is perfect for:
 ---
 
 ⭐ **If you find this project useful, please give it a star!** ⭐
+
+**Repository**: [https://github.com/PrachitiSParulekar/Traffic-Flow-Simulator-](https://github.com/PrachitiSParulekar/Traffic-Flow-Simulator-)
 ├── src/
 │   ├── models/
 │   │   ├── vehicle.py          # Vehicle class
